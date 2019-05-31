@@ -1,4 +1,5 @@
 from PIL import Image
+import os
 
 def tileCreator(src, dest, sizeW, sizeH):
     # open the image
@@ -64,3 +65,11 @@ def resize(img, w, h):
         img = resize(img, w, h)
 
     return img
+
+def massTile(src, dest, w, h):
+    # takes all image in a folder and create tiles for them
+    images = []
+    for file in os.listdir(src):
+        newFile = file[:len(file)-4]
+        newD = dest+"\\"+file+".png"
+        tileCreator(src+"\\"+file, newD, w, h)
