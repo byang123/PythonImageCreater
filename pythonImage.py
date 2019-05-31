@@ -71,5 +71,5 @@ def massTile(src, dest, w, h):
     images = []
     for file in os.listdir(src):
         newFile = file[:len(file)-4]
-        newD = dest+"\\"+file+".png"
+        newD = dest+"\\"+newFile+".png"
         tileCreator(src+"\\"+file, newD, w, h)
