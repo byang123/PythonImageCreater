@@ -56,7 +56,7 @@ def resize(img, w, h):
         ratio = srcH/h
 
     # resize
-    img = img.resize((srcW/ratio, srcH/ratio))
+    img = img.resize((int(srcW/ratio), int(srcH/ratio)))
 
     # check if it's done resizing
     if (srcW <= w and srcH <= h):
@@ -76,24 +76,11 @@ def massTile(src, dest, w, h):
 
 def fillInResize(src, dest, w, h, color):
     # centers the src image and fill surrounding area with requested color
-    # color should be in RGBA tuple (red 0-255, green, blue, alpha 0-1)
+    # color should be in RGBA tuple (red 0-255, green, blue, alpha 0-255)
     # open the image
     try:
         srcImg = Image.open(src)
-        # if src is bigger than requested size then resize
-        srcImg = resize(srcImg, w, h)
-
-        # make the default image with the desired background
-        blank = Image.new("RGBA", (w, h), color)
-    
-        # find the upper left corner to place image onto blank
-        srcW, srcH = srcImg.size
-        upW = (w/2) - srcW
-        upH = (h/2) - srcH
-
-        # paste the original image
-        blank.paste(srcImg, (upW, upH))
-
+        blank = fillInResizeModule(srcImg, w, h, color)
         blank.save(dest)
 
     except IOError:
@@ -110,8 +97,8 @@ def fillInResizeModule(srcImg, w, h, color):
 
     # find the upper left corner to place image onto blank
     srcW, srcH = srcImg.size
-    upW = (w/2) - srcW
-    upH = (h/2) - srcH
+    upW = int((w/2) - (srcW/2))
+    upH = int((h/2) - (srcH/2))
 
     # paste the original image
     blank.paste(srcImg, (upW, upH))
@@ -121,13 +108,26 @@ def fillInResizeModule(srcImg, w, h, color):
 def gifFillInResize(src, dest, w, h, color):
     # applies fillInResize to a gif
     try:
-        srcImg = (Image.open(src)).copy()
+        srcImg = Image.open(src)
+        frames = [] #to store all the edited frames of the src
 
-        index = srcImg.tell()
+        index = srcImg.tell() # get index of the curr frame
+
+        # iterate through the frames and edit them 1 by 1
         for frame in ImageSequence.Iterator(srcImg):
-            frame = fillInResizeModule(frame)
-        
-        srcImg.save(dest)
+            newFrame = fillInResizeModule(frame, w, h, color)
+            frames.append(newFrame)
+
+        frames[0].save(dest,
+                       formate='GIF',
+                       save_all=True,
+                       append_images=frames[1:],
+                       duration = 40,
+                       loop=0)
 
     except IOError:
         print("Cannot open image")
+
+def testBlank(w,h,color):
+    blank = Image.new("RGBA", (w,h), color)
+    blank.save("111.png")
