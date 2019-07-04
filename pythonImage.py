@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageSequence
 import os
 
 def tileCreator(src, dest, sizeW, sizeH):
@@ -73,3 +73,61 @@ def massTile(src, dest, w, h):
         newFile = file[:len(file)-4]
         newD = dest+"\\"+newFile+".png"
         tileCreator(src+"\\"+file, newD, w, h)
+
+def fillInResize(src, dest, w, h, color):
+    # centers the src image and fill surrounding area with requested color
+    # color should be in RGBA tuple (red 0-255, green, blue, alpha 0-1)
+    # open the image
+    try:
+        srcImg = Image.open(src)
+        # if src is bigger than requested size then resize
+        srcImg = resize(srcImg, w, h)
+
+        # make the default image with the desired background
+        blank = Image.new("RGBA", (w, h), color)
+    
+        # find the upper left corner to place image onto blank
+        srcW, srcH = srcImg.size
+        upW = (w/2) - srcW
+        upH = (h/2) - srcH
+
+        # paste the original image
+        blank.paste(srcImg, (upW, upH))
+
+        blank.save(dest)
+
+    except IOError:
+        print("Cannot open image")
+
+def fillInResizeModule(srcImg, w, h, color):
+    # same as fillInResize but doesnt save the image
+
+    # if src is bigger than requested size then resize
+    srcImg = resize(srcImg, w, h)
+
+    # make the default image with the desired background
+    blank = Image.new("RGBA", (w, h), color)
+
+    # find the upper left corner to place image onto blank
+    srcW, srcH = srcImg.size
+    upW = (w/2) - srcW
+    upH = (h/2) - srcH
+
+    # paste the original image
+    blank.paste(srcImg, (upW, upH))
+
+    return blank
+
+def gifFillInResize(src, dest, w, h, color):
+    # applies fillInResize to a gif
+    try:
+        srcImg = (Image.open(src)).copy()
+
+        index = srcImg.tell()
+        for frame in ImageSequence.Iterator(srcImg):
+            frame = fillInResizeModule(frame)
+        
+        srcImg.save(dest)
+
+    except IOError:
+        print("Cannot open image")
