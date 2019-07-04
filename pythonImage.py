@@ -119,7 +119,7 @@ def gifFillInResize(src, dest, w, h, color):
             frames.append(newFrame)
 
         frames[0].save(dest,
-                       formate='GIF',
+                       format='GIF',
                        save_all=True,
                        append_images=frames[1:],
                        duration = 40,
